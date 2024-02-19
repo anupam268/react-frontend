@@ -1,7 +1,7 @@
-# react-frontend
+
 
 ## 1. Directory Structure:
-/src
+`/src
   /components
     /HomePage
       HomePage.js
@@ -14,3 +14,4 @@
     AnomaliesDashboard.js
   /styles
     global.css
+`
