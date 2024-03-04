@@ -1,5 +1,9 @@
 import React from "react";
-import { makeStyles } from "@material-ui/core/styles";
+import {
+  createTheme,
+  makeStyles,
+  ThemeProvider,
+} from "@material-ui/core/styles";
 import Table from "@material-ui/core/Table";
 import TableBody from "@material-ui/core/TableBody";
 import TableCell from "@material-ui/core/TableCell";
@@ -11,20 +15,34 @@ import KeyboardArrowDownIcon from "@material-ui/icons/KeyboardArrowDown";
 import KeyboardArrowUpIcon from "@material-ui/icons/KeyboardArrowUp";
 import TableSortLabel from "@material-ui/core/TableSortLabel";
 import TextField from "@material-ui/core/TextField";
+import TablePagination from "@material-ui/core/TablePagination";
+import SearchIcon from "@material-ui/icons/Search";
+import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
+import ExpandLessIcon from "@material-ui/icons/ExpandLess";
 
-import "./style.css";
+const theme = createTheme();
 
 const useStyles = makeStyles((theme) => ({
   root: {
     width: "100%",
-    marginTop: theme.spacing(3),
     overflowX: "auto",
   },
   table: {
     minWidth: 650,
   },
+  tableHeader: {
+    fontWeight: "bold",
+    backgroundColor: "your_custom_color", // Replace with your custom color
+    color: theme.palette.common.white,
+  },
   filterInput: {
-    margin: theme.spacing(1),
+    marginLeft: theme.spacing(2),
+  },
+  pagination: {
+    borderTop: `1px solid ${theme.palette.divider}`,
+    padding: theme.spacing(2),
+    display: "flex",
+    justifyContent: "flex-end",
   },
 }));
 
@@ -43,9 +61,18 @@ const rows = [
 const ExpandableTableRow = ({ children, expandComponent, ...otherProps }) => {
   const [isExpanded, setIsExpanded] = React.useState(false);
 
+  const [isHovered, setIsHovered] = React.useState(false);
+
   return (
     <>
-      <TableRow {...otherProps}>
+      <TableRow
+        {...otherProps}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+        style={{
+          backgroundColor: isHovered ? "#f5f5f5" : "transparent", // Replace with your hover color
+        }}
+      >
         <TableCell padding="checkbox">
           <IconButton onClick={() => setIsExpanded(!isExpanded)}>
             {isExpanded ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
@@ -63,12 +90,15 @@ const ExpandableTableRow = ({ children, expandComponent, ...otherProps }) => {
   );
 };
 
-export default function SimpleTable() {
+const SimpleTable = () => {
   const classes = useStyles();
   const [orderBy, setOrderBy] = React.useState("name");
   const [order, setOrder] = React.useState("asc");
   const [filter, setFilter] = React.useState({});
   const [globalFilter, setGlobalFilter] = React.useState("");
+  const [page, setPage] = React.useState(0);
+  const [rowsPerPage, setRowsPerPage] = React.useState(2); // You can set your desired number of rows per page
+  const [expandAll, setExpandAll] = React.useState(false);
 
   const headCells = [
     { id: "name", label: "Dessert (100g serving)" },
@@ -123,80 +153,114 @@ export default function SimpleTable() {
     return 0;
   };
 
+  const handleExpandAll = () => {
+    setExpandAll((prevExpandAll) => !prevExpandAll);
+  };
+
   return (
-    <Paper className={classes.root}>
-      <Table className={classes.table} aria-label="simple table">
-        <TableHead>
-          <TableRow className={`${classes.noWrapHeaderRow}`}>
-            <TableCell colSpan={headCells.length + 1}>
-              <TextField
-                label="Global Filter"
-                variant="outlined"
-                className={classes.filterInput}
-                value={globalFilter}
-                id="globalFilterInput"
-                onChange={handleGlobalFilterChange}
-              />
-            </TableCell>
-          </TableRow>
-          <TableRow className={`${classes.noWrapHeaderRow}`}>
-            {headCells.map((headCell) => (
-              <TableCell
-                key={headCell.id}
-                padding="checkbox"
-                className={`${classes.tableHeadCell}`}
-              >
-                {headCell.id !== "protein" && (
-                  <>
-                    <TableSortLabel
-                      active={orderBy === headCell.id}
-                      direction={orderBy === headCell.id ? order : "asc"}
-                      onClick={() => handleRequestSort(headCell.id)}
-                    >
-                      {headCell.label}
-                    </TableSortLabel>
-                    <TextField
-                      label={`Filter ${headCell.label}`}
-                      variant="outlined"
-                      className={`${classes.filterInput} columnFilterInput`}
-                      value={filter[headCell.id] || ""}
-                      onChange={(e) => handleFilterChange(e, headCell.id)}
-                    />
-                  </>
-                )}
+    <ThemeProvider theme={theme}>
+      <Paper className={classes.root}>
+        <Table className={classes.table} aria-label="simple table">
+          <TableHead className={classes.tableHead}>
+            <TableRow className={classes.tableRow}>
+              <TableCell colSpan={headCells.length + 1} align="right">
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "flex-end",
+                  }}
+                >
+                  <TextField
+                    label="Filter"
+                    value={globalFilter}
+                    onChange={handleGlobalFilterChange}
+                    className={classes.filterInput}
+                  />
+                  <IconButton>
+                    <SearchIcon />
+                  </IconButton>
+                </div>
               </TableCell>
-            ))}
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {stableSort(rows, getComparator(order, orderBy))
-            .filter((row) =>
-              Object.keys(filter).every((key) =>
-                row[key]
-                  .toString()
-                  .toLowerCase()
-                  .includes(filter[key].toLowerCase())
+            </TableRow>
+            <TableRow>
+              <TableCell padding="checkbox">
+                <IconButton onClick={handleExpandAll}>
+                  {expandAll ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+                </IconButton>
+              </TableCell>
+              {headCells.map((headCell) => (
+                <TableCell
+                  className={classes.tableCell}
+                  key={headCell.id}
+                  padding="checkbox"
+                >
+                  {headCell.id !== "protein" && (
+                    <>
+                      <TableSortLabel
+                        active={orderBy === headCell.id}
+                        direction={orderBy === headCell.id ? order : "asc"}
+                        onClick={() => handleRequestSort(headCell.id)}
+                      >
+                        {headCell.label}
+                      </TableSortLabel>
+                      {/* <TextField
+                        label={`Filter ${headCell.label}`}
+                        value={filter[headCell.id] || ""}
+                        onChange={(e) => handleFilterChange(e, headCell.id)}
+                      /> */}
+                    </>
+                  )}
+                </TableCell>
+              ))}
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {stableSort(rows, getComparator(order, orderBy))
+              .filter((row) =>
+                Object.keys(filter).every((key) =>
+                  row[key]
+                    .toString()
+                    .toLowerCase()
+                    .includes(filter[key].toLowerCase())
+                )
               )
-            )
-            .filter((row) => isRowMatchingGlobalFilter(row))
-            .map((row) => (
-              <ExpandableTableRow
-                key={row.name}
-                expandComponent={
-                  <TableCell colSpan={headCells.length + 1}>
-                    {row.detail}
-                  </TableCell>
-                }
-              >
-                {headCells.map((headCell) => (
-                  <TableCell key={headCell.id} component="th" scope="row">
-                    {row[headCell.id]}
-                  </TableCell>
-                ))}
-              </ExpandableTableRow>
-            ))}
-        </TableBody>
-      </Table>
-    </Paper>
+              .filter((row) => isRowMatchingGlobalFilter(row))
+              .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+              .map((row) => (
+                <ExpandableTableRow
+                  key={row.name}
+                  expandComponent={
+                    <TableCell colSpan={headCells.length + 1}>
+                      {row.detail}
+                    </TableCell>
+                  }
+                  isExpanded={expandAll}
+                >
+                  {headCells.map((headCell) => (
+                    <TableCell key={headCell.id} component="th" scope="row">
+                      {row[headCell.id]}
+                    </TableCell>
+                  ))}
+                </ExpandableTableRow>
+              ))}
+          </TableBody>
+        </Table>
+        <TablePagination
+          rowsPerPageOptions={[5, 10, 25]}
+          component="div"
+          count={rows.length}
+          rowsPerPage={rowsPerPage}
+          page={page}
+          onChangePage={(event, newPage) => setPage(newPage)}
+          onChangeRowsPerPage={(event) => {
+            setRowsPerPage(parseInt(event.target.value, 10));
+            setPage(0);
+          }}
+        />
+      </Paper>
+    </ThemeProvider>
   );
-}
+};
+
+export default SimpleTable;
