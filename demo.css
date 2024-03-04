@@ -1,0 +1,69 @@
+/* styles.css */
+
+.root {
+  width: 100%;
+  margin-top: 16px; /* Adjust the margin as needed */
+  overflow-x: auto;
+}
+
+.table {
+  min-width: 650px;
+  width: 100%;
+  table-layout: auto;
+  padding: 10px;
+  margin: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.filterInput {
+  margin: 8px; /* Adjust the margin as needed */
+  padding: auto;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  width: 100%;
+  max-width: 300px;
+}
+
+#globalFilterInput {
+  margin: 8px;
+  padding: 8px;
+  border-collapse: collapse;
+  height: 10px;
+  width: 600px;
+  text-align: justify;
+  text-justify: center;
+  /* border: 1px solid #ccc; */
+  /* border-radius: 15px; */
+  /* box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); */
+}
+
+.columnFilterInput {
+  /* margin: 8px; */
+  border-collapse: collapse;
+  /* padding: 8px; */
+  border: none;
+  width: 150px;
+  /* height: px; */
+  overflow: auto;
+  text-align: justify;
+  text-justify: center;
+  /* border: 1px solid #ccc; */
+  /* border-radius: 10px; */
+  /* box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); */
+}
+
+.tableCell {
+  width: 100%;
+  min-width: 120px;
+}
+
+.tableHeadCell {
+  white-space: nowrap;
+  width: max-content;
+  padding: 2px 8px 2px 8px;
+}
+
+.noWrapHeaderRow {
+  white-space: nowrap;
+}
